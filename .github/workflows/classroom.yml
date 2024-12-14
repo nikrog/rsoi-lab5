@@ -13,26 +13,135 @@ jobs:
 
       - uses: docker/setup-buildx-action@v2
 
-      # TODO build, publish to docker hub, deploy to k8s
+      - name: Build images
+        timeout-minutes: 10
+        run: docker compose build
+
+      - name: Python3 Setup
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install Requirements
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Unit Tests
+        run: |
+          cd hotels_booking_system/services/gateway_service/unit_tests
+          pytest .
+
+      - name: Setup Postgres DB
+        run: |
+          docker compose up -d postgres
+          docker compose logs postgres
+          sleep 5
+          cd postgres
+          psql "user=postgres hostaddr=127.0.0.1 port=5432 password=postgres" < scripts_db/db-v2.sql
+
+      - name: Run containers
+        timeout-minutes: 10
+        run: |
+          docker compose up -d reservation_service
+          docker compose up -d payment_service
+          docker compose up -d loyalty_service
+          docker compose up -d gateway_service
+
+          docker compose logs reservation_service
+          docker compose logs payment_service
+          docker compose logs loyalty_service
+          docker compose logs gateway_service
+          
+          ./scripts_wf/wait-script.sh
+        env:
+          WAIT_PORTS: 8080,8070,8060,8050
+
+      - name: Wait 10s
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '10s'
 
       - name: Run API Tests
         uses: matt-ball/newman-action@master
         with:
-          collection: <variant>/postman/collection.json
-          environment: <variant>/postman/environment.json
+          collection: v2/postman/collection.json
+          environment: v2/postman/environment.json
           delayRequest: 100
           reporters: '[ "cli" ]'
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Publish images to Docker Hub
+        timeout-minutes: 15
+        run: |
+          docker push arperinn/api-gateway:latest
+          docker push arperinn/reservation-service:latest
+          docker push arperinn/loyalty-service:latest
+          docker push arperinn/payment-service:latest
+
+      - name: Setup Minikube
+        uses: medyagh/setup-minikube@master
+
+      - name: Check Minikube Cluster
+        run: |
+          kubectl get pods -A
+
+      - name: Create Namespace in Cluster
+        run: |
+          kubectl create namespace arperinn
+
+      - name: Deploy DB and services
+        run: |
+          kubectl get namespace
+          cd k8s
+          echo "------------------Deploy Postgres DB------------------"
+          helm delete postgres --namespace arperinn --ignore-not-found
+          helm install -n arperinn postgres ./postgres_db
+          echo "------------------Deploy Services------------------"
+          helm delete reserv --namespace arperinn --ignore-not-found
+          helm install -n arperinn reserv ./services
+
+      - name: Wait 30s
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '30s'
+
+      - name: Get all resources from namespace arperinn in Cluster
+        run: |
+          kubectl get all -n arperinn
+
+      - name: Setup Ingress
+        run: |
+          cd k8s/networking
+          minikube service gateway -n arperinn --url
+          kubectl apply -f ingress.yaml
+          kubectl get ingress
+          sudo echo "$(minikube ip) myapp.local" | sudo tee -a /etc/hosts
+
+      - name: Setup Postman environment (app url)
+        uses: sergeysova/jq-action@v2
+        id: version
+        with:
+          cmd: >-
+            jq '.values[0].value = "http://${{ secrets.PROD_HOST }}:${{ secrets.PROD_PORT }}"'
+            < v2/postman/environment.json > out.tmp &&
+            mv out.tmp v2/postman/environment.json
 
       - uses: education/autograding@v1
         id: autograder
         continue-on-error: true
 
-      - name: Github auto grader mark
-        uses: Romanow/google-sheet-autograder-marker@v1.0
-        with:
-          google_token: ${{secrets.GOOGLE_API_KEY}}
-          sheet_id: "1xkgjUX6Qmk7rdJG-QPOToav-HWWtthJjnShIKnw3oIY"
-          homework_number: 5
-          user_column: 'D'
-          column_offset: 'F'
-          mark: "'+"
+#      - name: Github auto grader mark
+#        uses: Romanow/google-sheet-autograder-marker@v1.0
+#        with:
+#          google_token: ${{secrets.GOOGLE_API_KEY}}
+#          sheet_id: "1xkgjUX6Qmk7rdJG-QPOToav-HWWtthJjnShIKnw3oIY"
+#          homework_number: 4
+#          user_column: 'D'
+#          column_offset: 'F'
+#          mark: "'+"

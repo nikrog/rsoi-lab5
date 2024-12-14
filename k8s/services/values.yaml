@@ -1,0 +1,50 @@
+reserv:
+  service:
+    type: ClusterIP
+    port: 8070
+    image: arperinn/reservation-service:latest
+    env:
+      DB_PORT: 5432
+      DB_NAME: postgres
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: postgres
+
+payment:
+  service:
+    type: ClusterIP
+    port: 8060
+    image: arperinn/payment-service:latest
+    env:
+      DB_PORT: 5432
+      DB_NAME: postgres
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: postgres
+
+loyalty:
+  service:
+    type: ClusterIP
+    port: 8050
+    image: arperinn/loyalty-service:latest
+    env:
+      DB_PORT: 5432
+      DB_NAME: postgres
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: postgres
+
+gateway:
+   service:
+    type: NodePort
+    port: 8080
+    nodePort: 30000
+    image: arperinn/api-gateway:latest
+    isGateway: true
+    env:
+      RESERVATION_SERVICE_HOST: reserv.arperinn.svc.cluster.local
+      RESERVATION_SERVICE_PORT: 8070
+      PAYMENT_SERVICE_HOST: payment.arperinn.svc.cluster.local
+      PAYMENT_SERVICE_PORT: 8060
+      LOYALTY_SERVICE_HOST: loyalty.arperinn.svc.cluster.local
+      LOYALTY_SERVICE_PORT: 8050

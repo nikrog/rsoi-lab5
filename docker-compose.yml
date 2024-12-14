@@ -1,0 +1,102 @@
+version: "3"
+services:
+  postgres:
+    image: library/postgres:13
+    container_name: postgres
+    restart: on-failure
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./postgres/:/docker-entrypoint-initdb.d/
+    ports:
+      - "5432:5432"
+    networks:
+      - internal
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 15s
+      timeout: 15s
+      retries: 10
+
+  reservation_service:
+    build: hotels_booking_system/services/reservation_service
+    image: arperinn/reservation-service:latest
+    container_name: reservation_service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_PORT: "5432"
+      DB_NAME: "reservations"
+      DB_USER: "program"
+      DB_PASSWORD: "test"
+      DB_HOST: "postgres"
+    ports:
+      - "8070:8070"
+    networks:
+      - internal
+
+  payment_service:
+    build: hotels_booking_system/services/payment_service
+    image: arperinn/payment-service:latest
+    container_name: payment_service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_PORT: "5432"
+      DB_NAME: "payments"
+      DB_USER: "program"
+      DB_PASSWORD: "test"
+      DB_HOST: "postgres"
+    ports:
+      - "8060:8060"
+    networks:
+      - internal
+
+  loyalty_service:
+    build: hotels_booking_system/services/loyalty_service
+    image: arperinn/loyalty-service:latest
+    container_name: loyalty_service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_PORT: "5432"
+      DB_NAME: "loyalties"
+      DB_USER: "program"
+      DB_PASSWORD: "test"
+      DB_HOST: "postgres"
+    ports:
+      - "8050:8050"
+    networks:
+      - internal
+
+  gateway_service:
+    build: hotels_booking_system/services/gateway_service
+    image: arperinn/api-gateway:latest
+    container_name: gateway_service
+    depends_on:
+      - reservation_service
+      - payment_service
+      - loyalty_service
+    environment:
+      RESERVATION_SERVICE_HOST: "reservation_service"
+      RESERVATION_SERVICE_PORT: "8070"
+      PAYMENT_SERVICE_HOST: "payment_service"
+      PAYMENT_SERVICE_PORT: "8060"
+      LOYALTY_SERVICE_HOST: "loyalty_service"
+      LOYALTY_SERVICE_PORT: "8050"
+    ports:
+      - "8080:8080"
+    networks:
+      - internal
+
+volumes:
+  db-data:
+
+networks:
+  internal:
