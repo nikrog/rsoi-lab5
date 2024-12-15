@@ -39,7 +39,7 @@ def service():
 
 
 @app.route('/api/v1/loyalty', methods=['GET'])
-async def get_loyalty() -> Response:
+def get_loyalty() -> Response:
     bearer = request.headers.get('Authorization')
 
     if bearer is None:
@@ -64,7 +64,7 @@ async def get_loyalty() -> Response:
 
 
 @app.route('/api/v1/loyalty', methods=['DELETE'])
-async def delete_loyalty() -> Response:
+def delete_loyalty() -> Response:
     bearer = request.headers.get('Authorization')
 
     if bearer is None:
@@ -100,7 +100,7 @@ async def delete_loyalty() -> Response:
 
 
 @app.route('/api/v1/loyalty', methods=['PATCH'])
-async def patch_loyalty() -> Response:
+def patch_loyalty() -> Response:
     bearer = request.headers.get('Authorization')
 
     if bearer is None:
@@ -134,7 +134,7 @@ async def patch_loyalty() -> Response:
 
 
 @app.route('/api/v1/loyalty', methods=['POST'])
-async def post_loyalty() -> Response:
+def post_loyalty() -> Response:
     bearer = request.headers.get('Authorization')
 
     if bearer is None:
@@ -159,7 +159,7 @@ async def post_loyalty() -> Response:
 
 
 @app.route('/manage/health', methods=['GET'])
-async def health_check() -> Response:
+def health_check() -> Response:
     return Response(status=200)
 
 

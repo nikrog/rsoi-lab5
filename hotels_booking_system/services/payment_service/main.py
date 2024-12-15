@@ -31,7 +31,7 @@ def service():
 
 
 @app.route('/api/v1/payment/<string:paymentUid>', methods=['GET'])
-async def get_payment(paymentUid: str) -> Response:
+def get_payment(paymentUid: str) -> Response:
     bearer = request.headers.get('Authorization')
 
     if bearer is None:
@@ -65,7 +65,7 @@ def validate_body(body):
 
 
 @app.route('/api/v1/payment', methods=['POST'])
-async def post_payment() -> Response:
+def post_payment() -> Response:
     bearer = request.headers.get('Authorization')
 
     if bearer is None:
@@ -89,7 +89,7 @@ async def post_payment() -> Response:
 
 
 @app.route('/api/v1/payment/<string:paymentUid>', methods=['DELETE'])
-async def delete_payment(paymentUid: str) -> Response:
+def delete_payment(paymentUid: str) -> Response:
     bearer = request.headers.get('Authorization')
 
     if bearer is None:
@@ -112,7 +112,7 @@ async def delete_payment(paymentUid: str) -> Response:
 
 
 @app.route('/manage/health', methods=['GET'])
-async def health_check() -> Response:
+def health_check() -> Response:
     return Response(status=200)
 
 

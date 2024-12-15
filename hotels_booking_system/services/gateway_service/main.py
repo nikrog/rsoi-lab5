@@ -30,7 +30,7 @@ def service():
 
 
 @app.route('/api/v1/hotels', methods=['GET'])
-async def get_hotels() -> Response:
+def get_hotels() -> Response:
     bearer = request.headers.get('Authorization')
 
     if bearer is None:
@@ -53,7 +53,7 @@ async def get_hotels() -> Response:
 
 
 @app.route('/api/v1/loyalty', methods=['GET'])
-async def get_loyalty() -> Response:
+def get_loyalty() -> Response:
     bearer = request.headers.get('Authorization')
 
     if bearer is None:
@@ -81,7 +81,7 @@ async def get_loyalty() -> Response:
 
 
 @app.route('/api/v1/me', methods=['GET'])
-async def get_me() -> Response:
+def get_me() -> Response:
     bearer = request.headers.get('Authorization')
 
     if bearer is None:
@@ -143,7 +143,7 @@ async def get_me() -> Response:
 
 
 @app.route('/api/v1/reservations/<string:reservationUid>', methods=['GET'])
-async def get_reservation(reservationUid: str) -> Response:
+def get_reservation(reservationUid: str) -> Response:
     bearer = request.headers.get('Authorization')
 
     if bearer is None:
@@ -195,7 +195,7 @@ async def get_reservation(reservationUid: str) -> Response:
 
 
 @app.route('/api/v1/reservations', methods=['GET'])
-async def get_reservations() -> Response:
+def get_reservations() -> Response:
     bearer = request.headers.get('Authorization')
 
     if bearer is None:
@@ -258,7 +258,7 @@ def validate_body(body):
 
 
 @app.route('/api/v1/reservations', methods=['POST'])
-async def post_reservations() -> Response:
+def post_reservations() -> Response:
     bearer = request.headers.get('Authorization')
 
     if bearer is None:
@@ -371,7 +371,7 @@ async def post_reservations() -> Response:
 
 
 @app.route('/api/v1/reservations/<string:reservationUid>', methods=['DELETE'])
-async def delete_reservation(reservationUid: str) -> Response:
+def delete_reservation(reservationUid: str) -> Response:
     bearer = request.headers.get('Authorization')
 
     if bearer is None:
@@ -423,12 +423,12 @@ async def delete_reservation(reservationUid: str) -> Response:
 
 
 @app.route('/manage/health', methods=['GET'])
-async def health_check() -> Response:
+def health_check() -> Response:
     return Response(status=200)
 
 
 @app.route("/authorize")
-async def login():
+def login():
     return oauth.keycloak.authorize_redirect(redirect_uri=url_for("callback", _external=True))
 
 
