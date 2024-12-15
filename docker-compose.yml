@@ -21,10 +21,10 @@ services:
       timeout: 15s
       retries: 10
 
-  reservation_service:
+  reservation_service_lab5:
     build: hotels_booking_system/services/reservation_service
-    image: arperinn/reservation-service:latest
-    container_name: reservation_service
+    image: arperinn/reservation-service-lab5:latest
+    container_name: reservation_service_lab5
     depends_on:
       postgres:
         condition: service_healthy
@@ -39,10 +39,10 @@ services:
     networks:
       - internal
 
-  payment_service:
+  payment_service_lab5:
     build: hotels_booking_system/services/payment_service
-    image: arperinn/payment-service:latest
-    container_name: payment_service
+    image: arperinn/payment-service-lab5:latest
+    container_name: payment_service_lab5
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,10 +57,10 @@ services:
     networks:
       - internal
 
-  loyalty_service:
+  loyalty_service_lab5:
     build: hotels_booking_system/services/loyalty_service
-    image: arperinn/loyalty-service:latest
-    container_name: loyalty_service
+    image: arperinn/loyalty-service-lab5:latest
+    container_name: loyalty_service_lab5
     depends_on:
       postgres:
         condition: service_healthy
@@ -75,20 +75,20 @@ services:
     networks:
       - internal
 
-  gateway_service:
+  gateway_service_lab5:
     build: hotels_booking_system/services/gateway_service
-    image: arperinn/api-gateway:latest
-    container_name: gateway_service
+    image: arperinn/api-gateway-lab5:latest
+    container_name: gateway_service_lab5
     depends_on:
-      - reservation_service
-      - payment_service
-      - loyalty_service
+      - reservation_service_lab5
+      - payment_service_lab5
+      - loyalty_service_lab5
     environment:
-      RESERVATION_SERVICE_HOST: "reservation_service"
+      RESERVATION_SERVICE_HOST: "reservation_service_lab5"
       RESERVATION_SERVICE_PORT: "8070"
-      PAYMENT_SERVICE_HOST: "payment_service"
+      PAYMENT_SERVICE_HOST: "payment_service_lab5"
       PAYMENT_SERVICE_PORT: "8060"
-      LOYALTY_SERVICE_HOST: "loyalty_service"
+      LOYALTY_SERVICE_HOST: "loyalty_service_lab5"
       LOYALTY_SERVICE_PORT: "8050"
     ports:
       - "8080:8080"

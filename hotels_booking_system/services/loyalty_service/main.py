@@ -1,17 +1,8 @@
-from quart import Quart
-from loyalty.models.models_class import LoyaltyModel
-from loyalty.interface.getLoyalty import getloyaltyb
-from loyalty.interface.postLoyalty import postloyaltyb
-from loyalty.interface.patchLoyalty import patchloyaltyb
-from loyalty.interface.deleteLoyalty import deleteloyaltyb
-from loyalty.interface.healthCheck import healthcheckb
-
-app = Quart(__name__)
-app.register_blueprint(getloyaltyb)
-app.register_blueprint(postloyaltyb)
-app.register_blueprint(patchloyaltyb)
-app.register_blueprint(deleteloyaltyb)
-app.register_blueprint(healthcheckb)
+from flask import Flask, Response, request
+from authlib.integrations.flask_client import OAuth
+import json
+from models.models_class import LoyaltyModel, loyalty_dict
+from utils import *
 
 
 def create_tables():
@@ -25,6 +16,151 @@ def create_tables():
         status="GOLD",
         discount=10
     )
+
+
+app = Flask(__name__)
+
+app.config['JSON_AS_ASCII'] = False
+#app.secret_key = os.environ['APP_SECRET_KEY']
+
+oauth = OAuth(app)
+oauth.register(
+    "keycloak",
+    client_id='',
+    client_secret='',
+    client_kwargs={"scope": "openid profile email"},
+    server_metadata_url=f"http://localhost:8080/realms/myrealm/.well-known/openid-configuration",
+)
+
+
+@app.route("/")
+def service():
+    return "LOYALTY"
+
+
+@app.route('/api/v1/loyalty', methods=['GET'])
+async def get_loyalty() -> Response:
+    bearer = request.headers.get('Authorization')
+
+    if bearer is None:
+        return Response(status=401)
+
+    client = check_jwt(bearer)
+
+    if not client:
+        return Response(status=401)
+    # if 'X-User-Name' not in request.headers.keys():
+    #     return Response(status=400, content_type='application/json',
+    #                     response=json.dumps({'errors': ['user not found']}))
+
+    #user = request.headers['X-User-Name']
+
+    loyalty = LoyaltyModel.select().where(LoyaltyModel.username == client).get().to_dict()
+
+    if loyalty is not None:
+        return Response(status=200, content_type='application/json', response=json.dumps(loyalty))
+    else:
+        return Response(status=404, content_type='application/json', response=json.dumps({'errors': ['user not found']}))
+
+
+@app.route('/api/v1/loyalty', methods=['DELETE'])
+async def delete_loyalty() -> Response:
+    bearer = request.headers.get('Authorization')
+
+    if bearer is None:
+        return Response(status=401)
+
+    client = check_jwt(bearer)
+
+    if not client:
+        return Response(status=401)
+    # if 'X-User-Name' not in request.headers.keys():
+    #     return Response(status=400, content_type='application/json',
+    #                     response=json.dumps({'message': ['user not found']}))
+    #
+    # user = request.headers['X-User-Name']
+
+    try:
+        loyalty = LoyaltyModel.select().where(LoyaltyModel.username == client).get()
+        if loyalty.reservation_count > 0:
+            loyalty.reservation_count -= 1
+
+        if loyalty.reservation_count < loyalty_dict['SILVER']['min_reservations_count']:
+            loyalty.status = 'BRONZE'
+            loyalty.discount = loyalty_dict['BRONZE']['discount']
+        elif loyalty.reservation_count < loyalty_dict['GOLD']['min_reservations_count']:
+            loyalty.status = 'SILVER'
+            loyalty.discount = loyalty_dict['SILVER']['discount']
+        loyalty.save()
+
+        return Response(status=200, content_type='application/json', response=json.dumps(loyalty.to_dict()))
+    except Exception as e:
+        return Response(status=404, content_type='application/json',
+                        response=json.dumps({'message': ['Loyalty not found']}))
+
+
+@app.route('/api/v1/loyalty', methods=['PATCH'])
+async def patch_loyalty() -> Response:
+    bearer = request.headers.get('Authorization')
+
+    if bearer is None:
+        return Response(status=401)
+
+    client = check_jwt(bearer)
+
+    if not client:
+        return Response(status=401)
+    # if 'X-User-Name' not in request.headers.keys():
+    #     return Response(status=400, content_type='application/json',
+    #                     response=json.dumps({'errors': ['user not found']}))
+    #
+    # user = request.headers['X-User-Name']
+
+    try:
+        loyalty = LoyaltyModel.select().where(LoyaltyModel.username == client).get()
+        loyalty.reservation_count += 1
+        if loyalty.reservation_count >= loyalty_dict['GOLD']['min_reservations_count']:
+            loyalty.status = 'GOLD'
+            loyalty.discount = loyalty_dict['GOLD']['discount']
+        elif loyalty.reservation_count >= loyalty_dict['SILVER']['min_reservations_count']:
+            loyalty.status = 'SILVER'
+            loyalty.discount = loyalty_dict['SILVER']['discount']
+        loyalty.save()
+
+        return Response(status=200, content_type='application/json', response=json.dumps(loyalty.to_dict()))
+    except Exception as e:
+        return Response(status=404, content_type='application/json',
+                        response=json.dumps({'errors': ['Loyalty not found']}))
+
+
+@app.route('/api/v1/loyalty', methods=['POST'])
+async def post_loyalty() -> Response:
+    bearer = request.headers.get('Authorization')
+
+    if bearer is None:
+        return Response(status=401)
+
+    client = check_jwt(bearer)
+
+    if not client:
+        return Response(status=401)
+    # if 'X-User-Name' not in request.headers.keys():
+    #     return Response(status=400, content_type='application/json',
+    #                     response=json.dumps({'errors': ['user not found']}))
+    #
+    # user = request.headers['X-User-Name']
+
+    loyalty = LoyaltyModel.create(username=client,
+                                  reservation_count=0,
+                                  status='BRONZE',
+                                  discount=loyalty_dict['BRONZE']['discount'])
+
+    return Response(status=200, content_type='application/json', response=json.dumps(loyalty.to_dict()))
+
+
+@app.route('/manage/health', methods=['GET'])
+async def health_check() -> Response:
+    return Response(status=200)
 
 
 if __name__ == '__main__':

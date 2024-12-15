@@ -3,7 +3,7 @@ import json
 from datetime import datetime as dt
 
 from quart import Blueprint, Response, request
-from .serviceRequests import post_data_to_service, delete_data_from_service, get_data_from_service, \
+from .serviceRequests import post_data_to_service, get_data_from_service, \
     patch_data_to_service
 
 postreservationb = Blueprint('post_reservation', __name__, )

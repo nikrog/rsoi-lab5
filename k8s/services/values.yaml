@@ -2,7 +2,7 @@ reserv:
   service:
     type: ClusterIP
     port: 8070
-    image: arperinn/reservation-service:latest
+    image: arperinn/reservation-service-lab5:latest
     env:
       DB_PORT: 5432
       DB_NAME: postgres
@@ -14,7 +14,7 @@ payment:
   service:
     type: ClusterIP
     port: 8060
-    image: arperinn/payment-service:latest
+    image: arperinn/payment-service-lab5:latest
     env:
       DB_PORT: 5432
       DB_NAME: postgres
@@ -26,7 +26,7 @@ loyalty:
   service:
     type: ClusterIP
     port: 8050
-    image: arperinn/loyalty-service:latest
+    image: arperinn/loyalty-service-lab5:latest
     env:
       DB_PORT: 5432
       DB_NAME: postgres
@@ -39,7 +39,7 @@ gateway:
     type: NodePort
     port: 8080
     nodePort: 30000
-    image: arperinn/api-gateway:latest
+    image: arperinn/api-gateway-lab5:latest
     isGateway: true
     env:
       RESERVATION_SERVICE_HOST: reserv.arperinn.svc.cluster.local

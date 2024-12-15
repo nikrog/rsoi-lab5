@@ -43,15 +43,15 @@ jobs:
       - name: Run containers
         timeout-minutes: 10
         run: |
-          docker compose up -d reservation_service
-          docker compose up -d payment_service
-          docker compose up -d loyalty_service
-          docker compose up -d gateway_service
+          docker compose up -d reservation_service_lab5
+          docker compose up -d payment_service_lab5
+          docker compose up -d loyalty_service_lab5
+          docker compose up -d gateway_service_lab5
 
-          docker compose logs reservation_service
-          docker compose logs payment_service
-          docker compose logs loyalty_service
-          docker compose logs gateway_service
+          docker compose logs reservation_service_lab5
+          docker compose logs payment_service_lab5
+          docker compose logs loyalty_service_lab5
+          docker compose logs gateway_service_lab5
           
           ./scripts_wf/wait-script.sh
         env:
@@ -79,10 +79,10 @@ jobs:
       - name: Publish images to Docker Hub
         timeout-minutes: 15
         run: |
-          docker push arperinn/api-gateway:latest
-          docker push arperinn/reservation-service:latest
-          docker push arperinn/loyalty-service:latest
-          docker push arperinn/payment-service:latest
+          docker push arperinn/api-gateway-lab5:latest
+          docker push arperinn/reservation-service-lab5:latest
+          docker push arperinn/loyalty-service-lab5:latest
+          docker push arperinn/payment-service-lab5:latest
 
       - name: Setup Minikube
         uses: medyagh/setup-minikube@master
