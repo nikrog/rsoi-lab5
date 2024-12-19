@@ -123,14 +123,26 @@ jobs:
           kubectl get ingress
           sudo echo "$(minikube ip) myapp.local" | sudo tee -a /etc/hosts
 
-      - name: Setup Postman environment (app url)
-        uses: sergeysova/jq-action@v2
-        id: version
-        with:
-          cmd: >-
-            jq '.values[0].value = "http://${{ secrets.PROD_HOST }}:${{ secrets.PROD_PORT }}"'
-            < v2/postman/environment.json > out.tmp &&
-            mv out.tmp v2/postman/environment.json
+      - name: Setup Postman environment
+        run: |
+          cd v2/postman
+          echo '[
+            {"key": "serviceUrl", "value": "http://${{ secrets.PROD_HOST }}:${{ secrets.PROD_PORT }}"},
+            {"key": "tokenUrl", "value": "${{ secrets.KC_URL }}/kc/realms/${{ secrets.KC_REALM }}/protocol/openid-connect/token"},
+            {"key": "username", "value": "${{ secrets.KC_USERNAME }}"},
+            {"key": "password", "value": "${{ secrets.KC_PASSWORD }}"},
+            {"key": "clientId", "value": "${{ secrets.KC_CLIENT_ID }}"},
+            {"key": "clientSecret", "value": "${{ secrets.KC_CLIENT_SECRET }}"}
+          ]' > environment.json
+
+#      - name: Setup Postman environment (app url)
+#        uses: sergeysova/jq-action@v2
+#        id: version
+#        with:
+#          cmd: >-
+#            jq '.values[0].value = "http://${{ secrets.PROD_HOST }}:${{ secrets.PROD_PORT }}"'
+#            < v2/postman/environment.json > out.tmp &&
+#            mv out.tmp v2/postman/environment.json
 
       - uses: education/autograding@v1
         id: autograder

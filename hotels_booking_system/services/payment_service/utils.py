@@ -1,6 +1,6 @@
 import jwt
 import requests
-
+from service_errors import *
 JWKS_URL = "http://localhost:8080/realms/myrealm/protocol/openid-connect/certs"
 CLIENT_ID = "myclient"
 
@@ -20,7 +20,7 @@ def get_signing_key(jwt_token):
 
 def check_jwt(bearer):
     try:
-        jwt_token = bearer.split()[1]
+        jwt_token = bearer.split()[0]
         signing_key = get_signing_key(jwt_token)
         data = jwt.decode(
             jwt_token,
@@ -31,4 +31,4 @@ def check_jwt(bearer):
         )
         return data["name"]
     except:
-        return False
+        return error

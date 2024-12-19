@@ -43,7 +43,8 @@ def get_hotels() -> Response:
 
     response = get_data_from_service(
         'http://' + os.environ['RESERVATION_SERVICE_HOST'] + ':'
-        + os.environ['RESERVATION_SERVICE_PORT'] + '/' + 'api/v1/hotels?' + request.full_path.split('?')[-1], timeout=5)
+        + os.environ['RESERVATION_SERVICE_PORT'] + '/' + 'api/v1/hotels?' + request.full_path.split('?')[-1], timeout=5,
+        headers={'Authorization': bearer})
 
     if response:
         return Response(status=response.status_code, content_type='application/json', response=response.text)
@@ -70,7 +71,7 @@ def get_loyalty() -> Response:
 
     response = get_data_from_service('http://' + os.environ['LOYALTY_SERVICE_HOST'] + ':' + os.environ[
         'LOYALTY_SERVICE_PORT'] + '/api/v1/loyalty', timeout=5,
-                                     headers={'X-User-Name': client})
+                                     headers={'Authorization': bearer})
     if response is None:
         return Response(status=500, content_type='application/json',
                         response=json.dumps({'errors': ['Loyalty service is unavailable']}))
@@ -98,7 +99,7 @@ def get_me() -> Response:
 
     response = get_data_from_service(
         'http://' + os.environ['RESERVATION_SERVICE_HOST'] + ':' + os.environ['RESERVATION_SERVICE_PORT'] + '/api/v1/reservations',
-        timeout=5, headers={'X-User-Name': client})
+        timeout=5, headers={'Authorization': bearer})
 
     if response is None:
         return Response(status=500, content_type='application/json',
@@ -108,7 +109,7 @@ def get_me() -> Response:
     for res in reservations:
         response = get_data_from_service(
             'http://' + os.environ['RESERVATION_SERVICE_HOST'] + ':' + os.environ['RESERVATION_SERVICE_PORT'] + '/api/v1/hotels/' +
-            res['hotel_id'], timeout=5)
+            res['hotel_id'], timeout=5, headers={'Authorization': bearer})
 
         if response is None:
             return Response(status=500, content_type='application/json',
@@ -118,7 +119,8 @@ def get_me() -> Response:
         res['hotel'] = response.json()
 
         response = get_data_from_service('http://' + os.environ['PAYMENT_SERVICE_HOST'] + ':' + os.environ[
-            'PAYMENT_SERVICE_PORT'] + '/api/v1/payment/' + res['paymentUid'], timeout=5)
+            'PAYMENT_SERVICE_PORT'] + '/api/v1/payment/' + res['paymentUid'], timeout=5,
+                                         headers={'Authorization': bearer})
 
         if response is None:
             return Response(status=500, content_type='application/json',
@@ -129,7 +131,7 @@ def get_me() -> Response:
 
     response = get_data_from_service('http://' + os.environ['LOYALTY_SERVICE_HOST'] + ':' + os.environ[
         'LOYALTY_SERVICE_PORT'] + '/api/v1/loyalty', timeout=5,
-                                     headers={'X-User-Name': client})
+                                     headers={'Authorization': bearer})
     if response is None:
         return Response(status=500, content_type='application/json',
                         response=json.dumps({'errors': ['Loyalty service is unavailable']}))
@@ -159,7 +161,7 @@ def get_reservation(reservationUid: str) -> Response:
 
     response = get_data_from_service('http://' + os.environ['RESERVATION_SERVICE_HOST'] + ':' + os.environ[
         'RESERVATION_SERVICE_PORT'] + '/api/v1/reservations/' + reservationUid, timeout=5,
-                                     headers={'X-User-Name': client})
+                                     headers={'Authorization': bearer})
     if response is None:
         return Response(status=500, content_type='application/json',
                         response=json.dumps({'errors': ['Reservation service is unavailable']}))
@@ -171,7 +173,7 @@ def get_reservation(reservationUid: str) -> Response:
 
     response = get_data_from_service('http://' + os.environ['RESERVATION_SERVICE_HOST'] + ':' + os.environ[
         'RESERVATION_SERVICE_PORT'] + '/api/v1/hotels/' + reservation['hotel_id'], timeout=5,
-                                     headers={'X-User-Name': client})
+                                     headers={'Authorization': bearer})
     if response is None:
         return Response(status=500, content_type='application/json',
                         response=json.dumps({'errors': ['Reservation service is unavailable']}))
@@ -183,7 +185,7 @@ def get_reservation(reservationUid: str) -> Response:
 
     response = get_data_from_service(
         'http://' + os.environ['PAYMENT_SERVICE_HOST'] + ':' + os.environ['PAYMENT_SERVICE_PORT'] + '/api/v1/payment/'
-        + reservation['paymentUid'], timeout=5)
+        + reservation['paymentUid'], timeout=5, headers={'Authorization': bearer})
     if response is None:
         return Response(status=500, content_type='application/json',
                         response=json.dumps({'errors': ['Payment service is unavailable']}))
@@ -211,7 +213,7 @@ def get_reservations() -> Response:
 
     response = get_data_from_service(
         'http://' + os.environ['RESERVATION_SERVICE_HOST'] + ':' + os.environ['RESERVATION_SERVICE_PORT'] + '/api/v1/reservations',
-        timeout=5, headers={'X-User-Name': client})
+        timeout=5, headers={'Authorization': bearer})
 
     if response is None:
         return Response(status=500, content_type='application/json',
@@ -221,7 +223,7 @@ def get_reservations() -> Response:
     for res in reservations:
         response = get_data_from_service(
             'http://' + os.environ['RESERVATION_SERVICE_HOST'] + ':' + os.environ['RESERVATION_SERVICE_PORT'] + '/api/v1/hotels/' +
-            res['hotel_id'], timeout=5)
+            res['hotel_id'], timeout=5, headers={'Authorization': bearer})
 
         if response is None:
             return Response(status=500, content_type='application/json',
@@ -231,7 +233,8 @@ def get_reservations() -> Response:
         res['hotel'] = response.json()
 
         response = get_data_from_service('http://' + os.environ['PAYMENT_SERVICE_HOST'] + ':' + os.environ[
-            'PAYMENT_SERVICE_PORT'] + '/api/v1/payment/' + res['paymentUid'], timeout=5)
+            'PAYMENT_SERVICE_PORT'] + '/api/v1/payment/' + res['paymentUid'], timeout=5,
+                                         headers={'Authorization': bearer})
 
         if response is None:
             return Response(status=500, content_type='application/json',
@@ -278,7 +281,7 @@ def post_reservations() -> Response:
 
     response = get_data_from_service(
         'http://' + os.environ['RESERVATION_SERVICE_HOST'] + ':' + os.environ['RESERVATION_SERVICE_PORT'] + '/api/v1/hotels/' + body[
-            'hotelUid'], timeout=5)
+            'hotelUid'], timeout=5, headers={'Authorization': bearer})
 
     if response is None:
         return Response(status=500, content_type='application/json',
@@ -293,7 +296,7 @@ def post_reservations() -> Response:
 
     response = get_data_from_service(
         'http://' + os.environ['LOYALTY_SERVICE_HOST'] + ':' + os.environ['LOYALTY_SERVICE_PORT'] + '/api/v1/loyalty',
-        timeout=5, headers={'X-User-Name': request.headers['X-User-Name']})
+        timeout=5, headers={'Authorization': bearer})
 
     if response is None:
         return Response(status=500, content_type='application/json',
@@ -320,7 +323,7 @@ def post_reservations() -> Response:
 
     response = post_data_to_service(
         'http://' + os.environ['PAYMENT_SERVICE_HOST'] + ':' + os.environ['PAYMENT_SERVICE_PORT'] + '/api/v1/payment',
-        timeout=5, headers={'X-User-Name': client}, data={'price': price_with_discount})
+        timeout=5, headers={'Authorization': bearer}, data={'price': price_with_discount})
 
     if response is None:
         return Response(status=500, content_type='application/json',
@@ -333,7 +336,7 @@ def post_reservations() -> Response:
 
     response = patch_data_to_service(
         'http://' + os.environ['LOYALTY_SERVICE_HOST'] + ':' + os.environ['LOYALTY_SERVICE_PORT'] + '/api/v1/loyalty',
-        timeout=5, headers={'X-User-Name': client})
+        timeout=5, headers={'Authorization': bearer})
 
     if response is None:
         return Response(status=500, content_type='application/json',
@@ -345,7 +348,7 @@ def post_reservations() -> Response:
     loyalty = response.json()
 
     response = post_data_to_service('http://' + os.environ['RESERVATION_SERVICE_HOST'] + ':' + os.environ['RESERVATION_SERVICE_PORT'] + '/api/v1/reservations',
-                                      timeout=5, headers={'X-User-Name': client},
+                                      timeout=5, headers={'Authorization': bearer},
                                       data={'hotelUid': hotel['hotelUid'], 'startDate': body['startDate'],
                                             'endDate': body['endDate'],
                                             'paymentUid': payment['paymentUid']})
@@ -387,7 +390,7 @@ def delete_reservation(reservationUid: str) -> Response:
 
     response = delete_data_from_service('http://' + os.environ['RESERVATION_SERVICE_HOST'] + ':'
                                         + os.environ['RESERVATION_SERVICE_PORT'] + '/api/v1/reservations/'
-                                        + reservationUid, timeout=5)
+                                        + reservationUid, timeout=5, headers={'Authorization': bearer})
 
     if response is None:
         return Response(status=500, content_type='application/json',
@@ -399,7 +402,7 @@ def delete_reservation(reservationUid: str) -> Response:
 
     response = delete_data_from_service('http://' + os.environ['PAYMENT_SERVICE_HOST'] + ':'
                                         + os.environ['PAYMENT_SERVICE_PORT'] + '/api/v1/payment/'
-                                        + reservation['paymentUid'], timeout=5)
+                                        + reservation['paymentUid'], timeout=5, headers={'Authorization': bearer})
 
     if response is None:
         return Response(status=500, content_type='application/json',
@@ -410,7 +413,7 @@ def delete_reservation(reservationUid: str) -> Response:
 
     response = delete_data_from_service(
         'http://' + os.environ['LOYALTY_SERVICE_HOST'] + ':' + os.environ['LOYALTY_SERVICE_PORT'] + '/api/v1/loyalty',
-        timeout=5, headers={'X-User-Name': client})
+        timeout=5, headers={'Authorization': bearer})
 
     if response is None:
         return Response(status=500, content_type='application/json',
