@@ -98,10 +98,10 @@ jobs:
           helm delete reserv --namespace arperinn --ignore-not-found
           helm install -n arperinn reserv ./services
 
-      - name: Wait 30s
+      - name: Wait 60s
         uses: jakejarvis/wait-action@master
         with:
-          time: '30s'
+          time: '60s'
 
       - name: Get all resources from namespace arperinn in Cluster
         run: |

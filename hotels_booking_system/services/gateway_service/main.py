@@ -69,16 +69,14 @@ def get_loyalty() -> Response:
     #     return Response(status=400, content_type='application/json',
     #                     response=json.dumps({'errors': ['User Name missing']}))
 
-    response = get_data_from_service('http://' + os.environ['LOYALTY_SERVICE_HOST'] + ':' + os.environ[
+    loyalty = get_data_from_service('http://' + os.environ['LOYALTY_SERVICE_HOST'] + ':' + os.environ[
         'LOYALTY_SERVICE_PORT'] + '/api/v1/loyalty', timeout=5,
                                      headers={'Authorization': bearer})
-    if response is None:
+    if loyalty is None:
         return Response(status=500, content_type='application/json',
                         response=json.dumps({'errors': ['Loyalty service is unavailable']}))
 
-    loyalty = response.json()
-
-    return Response(status=200, content_type='application/json', response=json.dumps(loyalty))
+    return Response(status=200, content_type='application/json', response=loyalty.text)
 
 
 @app.route('/api/v1/me', methods=['GET'])
