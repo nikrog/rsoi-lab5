@@ -52,3 +52,5 @@
 ### Варианты заданий
 
 Распределение вариантов заданий аналогично [ЛР #2](https://github.com/bmstu-rsoi/lab2-template).
+
+В роли Identity Provider можно используется [Keycloak](https://www.keycloak.org/).
