@@ -1,5 +1,6 @@
 import json
 import uuid
+import os
 import datetime as dt
 from flask import Flask, request, make_response, jsonify, Response
 from authlib.integrations.flask_client import OAuth
@@ -32,10 +33,10 @@ app.config['JSON_AS_ASCII'] = False
 oauth = OAuth(app)
 oauth.register(
     "keycloak",
-    client_id='',
-    client_secret='',
+    client_id=os.environ.get("KC_CLIENT_ID"),
+    client_secret=os.environ.get("KC_CLIENT_SECRET"),
     client_kwargs={"scope": "openid profile email"},
-    server_metadata_url=f"http://localhost:8080/realms/myrealm/.well-known/openid-configuration",
+    server_metadata_url=f"http://{os.environ.get("KC_HOST")}/realms/{os.environ.get("KC_REALM")}/.well-known/openid-configuration",
 )
 
 
@@ -146,12 +147,6 @@ def get_reservation(reservationUid: str) -> Response:
     if not client:
         return Response(status=401)
 
-    # if 'X-User-Name' not in request.headers.keys():
-    #     return Response(status=400, content_type='application/json',
-    #                     response=json.dumps({'errors': ['user not found']}))
-    #
-    # user = request.headers['X-User-Name']
-
     try:
         reservation = ReservationModel.select().where(ReservationModel.reservation_uid == reservationUid).get().to_dict()
 
@@ -173,12 +168,6 @@ def get_reservations() -> Response:
 
     if not client:
         return Response(status=401)
-
-    # if 'X-User-Name' not in request.headers.keys():
-    #     return Response(status=400, content_type='application/json',
-    #                     response=json.dumps({'errors': ['user not found']}))
-    #
-    # user = request.headers['X-User-Name']
 
     reservations = [reservation.to_dict() for reservation in ReservationModel.select().where(ReservationModel.username == client)]
 

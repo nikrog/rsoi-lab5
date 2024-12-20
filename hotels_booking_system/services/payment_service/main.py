@@ -1,5 +1,6 @@
 import json
 import uuid
+import os
 from flask import Flask, request, make_response, jsonify, Response
 from authlib.integrations.flask_client import OAuth
 from models.models_class import PaymentModel
@@ -18,10 +19,10 @@ app.config['JSON_AS_ASCII'] = False
 oauth = OAuth(app)
 oauth.register(
     "keycloak",
-    client_id='',
-    client_secret='',
+    client_id=os.environ.get("KC_CLIENT_ID"),
+    client_secret=os.environ.get("KC_CLIENT_SECRET"),
     client_kwargs={"scope": "openid profile email"},
-    server_metadata_url=f"http://localhost:8080/realms/myrealm/.well-known/openid-configuration",
+    server_metadata_url=f"http://{os.environ.get("KC_HOST")}/realms/{os.environ.get("KC_REALM")}/.well-known/openid-configuration",
 )
 
 

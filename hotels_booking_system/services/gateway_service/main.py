@@ -18,10 +18,10 @@ app.config['JSON_AS_ASCII'] = False
 oauth = OAuth(app)
 oauth.register(
     "keycloak",
-    client_id='',
-    client_secret='',
+    client_id=os.environ.get("KC_CLIENT_ID"),
+    client_secret=os.environ.get("KC_CLIENT_SECRET"),
     client_kwargs={"scope": "openid profile email"},
-    server_metadata_url=f"http://localhost:8080/realms/myrealm/.well-known/openid-configuration",
+    server_metadata_url=f"http://{os.environ.get("KC_HOST")}/realms/{os.environ.get("KC_REALM")}/.well-known/openid-configuration",
 )
 
 @app.route("/")
@@ -64,10 +64,6 @@ def get_loyalty() -> Response:
 
     if not client:
         return Response(status=401)
-
-    # if 'X-User-Name' not in request.headers.keys():
-    #     return Response(status=400, content_type='application/json',
-    #                     response=json.dumps({'errors': ['User Name missing']}))
 
     loyalty = get_data_from_service('http://' + os.environ['LOYALTY_SERVICE_HOST'] + ':' + os.environ[
         'LOYALTY_SERVICE_PORT'] + '/api/v1/loyalty', timeout=5,
@@ -153,9 +149,6 @@ def get_reservation(reservationUid: str) -> Response:
 
     if not client:
         return Response(status=401)
-    # if 'X-User-Name' not in request.headers.keys():
-    #     return Response(status=400, content_type='application/json',
-    #                     response=json.dumps({'errors': ['User Name missing']}))
 
     response = get_data_from_service('http://' + os.environ['RESERVATION_SERVICE_HOST'] + ':' + os.environ[
         'RESERVATION_SERVICE_PORT'] + '/api/v1/reservations/' + reservationUid, timeout=5,
@@ -205,9 +198,6 @@ def get_reservations() -> Response:
 
     if not client:
         return Response(status=401)
-    # if 'X-User-Name' not in request.headers.keys():
-    #     return Response(status=400, content_type='application/json',
-    #                     response=json.dumps({'errors': ['User name missing']}))
 
     response = get_data_from_service(
         'http://' + os.environ['RESERVATION_SERVICE_HOST'] + ':' + os.environ['RESERVATION_SERVICE_PORT'] + '/api/v1/reservations',
@@ -269,9 +259,6 @@ def post_reservations() -> Response:
 
     if not client:
         return Response(status=401)
-    # if 'X-User-Name' not in request.headers.keys():
-    #     return Response(status=400, content_type='application/json',
-    #                     response=json.dumps({'errors': ['User name missing']}))
 
     body, errors = validate_body(request.get_data())
     if len(errors) > 0:

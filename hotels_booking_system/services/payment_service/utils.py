@@ -1,8 +1,10 @@
 import jwt
 import requests
+import os
 from service_errors import *
-JWKS_URL = "http://localhost:8080/realms/myrealm/protocol/openid-connect/certs"
-CLIENT_ID = "myclient"
+
+JWKS_URL = f"http://{os.environ.get("KC_HOST")}/realms/{os.environ.get("KC_REALM")}/protocol/openid-connect/certs"
+CLIENT_ID = {os.environ.get("KC_CLIENT_ID")}  # audience
 
 
 def get_signing_key(jwt_token):

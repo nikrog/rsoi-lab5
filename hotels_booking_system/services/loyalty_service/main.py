@@ -1,6 +1,7 @@
 from flask import Flask, Response, request
 from authlib.integrations.flask_client import OAuth
 import json
+import os
 from models.models_class import LoyaltyModel, loyalty_dict
 from utils import *
 
@@ -26,10 +27,10 @@ app.config['JSON_AS_ASCII'] = False
 oauth = OAuth(app)
 oauth.register(
     "keycloak",
-    client_id='',
-    client_secret='',
+    client_id=os.environ.get("KC_CLIENT_ID"),
+    client_secret=os.environ.get("KC_CLIENT_SECRET"),
     client_kwargs={"scope": "openid profile email"},
-    server_metadata_url=f"http://localhost:8080/realms/myrealm/.well-known/openid-configuration",
+    server_metadata_url=f"http://{os.environ.get("KC_HOST")}/realms/{os.environ.get("KC_REALM")}/.well-known/openid-configuration",
 )
 
 
@@ -49,11 +50,6 @@ def get_loyalty() -> Response:
 
     if not client:
         return Response(status=401)
-    # if 'X-User-Name' not in request.headers.keys():
-    #     return Response(status=400, content_type='application/json',
-    #                     response=json.dumps({'errors': ['user not found']}))
-
-    #user = request.headers['X-User-Name']
 
     loyalty = LoyaltyModel.select().where(LoyaltyModel.username == client).get().to_dict()
 
@@ -74,11 +70,6 @@ def delete_loyalty() -> Response:
 
     if not client:
         return Response(status=401)
-    # if 'X-User-Name' not in request.headers.keys():
-    #     return Response(status=400, content_type='application/json',
-    #                     response=json.dumps({'message': ['user not found']}))
-    #
-    # user = request.headers['X-User-Name']
 
     try:
         loyalty = LoyaltyModel.select().where(LoyaltyModel.username == client).get()
@@ -110,11 +101,6 @@ def patch_loyalty() -> Response:
 
     if not client:
         return Response(status=401)
-    # if 'X-User-Name' not in request.headers.keys():
-    #     return Response(status=400, content_type='application/json',
-    #                     response=json.dumps({'errors': ['user not found']}))
-    #
-    # user = request.headers['X-User-Name']
 
     try:
         loyalty = LoyaltyModel.select().where(LoyaltyModel.username == client).get()
@@ -144,11 +130,6 @@ def post_loyalty() -> Response:
 
     if not client:
         return Response(status=401)
-    # if 'X-User-Name' not in request.headers.keys():
-    #     return Response(status=400, content_type='application/json',
-    #                     response=json.dumps({'errors': ['user not found']}))
-    #
-    # user = request.headers['X-User-Name']
 
     loyalty = LoyaltyModel.create(username=client,
                                   reservation_count=0,

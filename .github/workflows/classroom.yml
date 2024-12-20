@@ -56,6 +56,11 @@ jobs:
           ./scripts_wf/wait-script.sh
         env:
           WAIT_PORTS: 8080,8070,8060,8050
+          KC_HOST: ${{ secrets.KC_HOST }}
+          KC_REALM: ${{ secrets.KC_REALM }}
+          KC_CLIENT_ID: ${{ secrets.KC_CLIENT_ID }}
+          KC_CLIENT_SECRET: ${{ secrets.KC_CLIENT_SECRET }}
+
 
       - name: Wait 10s
         uses: jakejarvis/wait-action@master
