@@ -102,6 +102,11 @@ jobs:
           echo "------------------Deploy Services------------------"
           helm delete reserv --namespace arperinn --ignore-not-found
           helm install -n arperinn reserv ./services
+        env:
+          KC_HOST: ${{ secrets.KC_HOST }}
+          KC_REALM: ${{ secrets.KC_REALM }}
+          KC_CLIENT_ID: ${{ secrets.KC_CLIENT_ID }}
+          KC_CLIENT_SECRET: ${{ secrets.KC_CLIENT_SECRET }}
 
       - name: Wait 60s
         uses: jakejarvis/wait-action@master

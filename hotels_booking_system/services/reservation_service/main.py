@@ -36,7 +36,7 @@ oauth.register(
     client_id=os.environ.get("KC_CLIENT_ID"),
     client_secret=os.environ.get("KC_CLIENT_SECRET"),
     client_kwargs={"scope": "openid profile email"},
-    server_metadata_url=f"http://{os.environ.get("KC_HOST")}/realms/{os.environ.get("KC_REALM")}/.well-known/openid-configuration",
+    server_metadata_url=f"http://{os.environ.get('KC_HOST')}/realms/{os.environ.get('KC_REALM')}/.well-known/openid-configuration",
 )
 
 
